@@ -1,0 +1,36 @@
+name: CI Setup
+description: "Sets up the environment for jobs during CI workflow"
+
+runs:
+  using: composite
+  steps:
+    - name: 🐘 Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: "8.3"
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, imagick
+        tools: composer:v2
+        coverage: none
+    - name: ℹ Setup Problem Matches
+      shell: sh
+      run: |
+        echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+        echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+    - name: ⚙️ Set the environment file
+      shell: sh
+      run: mv -f .env.ci .env.testing
+    - name: Prepare SQLite Database
+      shell: sh
+      run: |
+        touch database/database.sqlite
+        echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env.testing
+    - name: 🗂 Get composer cache directory
+      id: composer-cache
+      shell: sh
+      run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+        restore-keys: ${{ runner.os }}-composer-
