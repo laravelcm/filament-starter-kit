@@ -16,14 +16,6 @@ runs:
       run: |
         echo "::add-matcher::${{ runner.tool_cache }}/php.json"
         echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
-    - name: ⚙️ Set the environment file
-      shell: sh
-      run: mv -f .env.ci .env.testing
-    - name: Prepare SQLite Database
-      shell: sh
-      run: |
-        touch database/database.sqlite
-        echo "DB_DATABASE=$(pwd)/database/database.sqlite" >> .env.testing
     - name: 🗂 Get composer cache directory
       id: composer-cache
       shell: sh
